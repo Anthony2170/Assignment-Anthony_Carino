@@ -1,0 +1,217 @@
+---
+title: "Assignment_Anthony_Carino_46375821"
+author: "Anthony Carino 46375821"
+date: "17/10/2021"
+output: pdf_document
+---
+
+## Question 1
+
+```{r setup, include=FALSE}
+paramo = read.table("paramo.dat",header=TRUE)
+```
+
+**a)** These outputs help to identify possible predictors to the N response variable. The correlation matrix shows there is a potentially significant positive relationship between the response variable N, and AR predictor. They have a 0.583 correlation. The response variable N also has a potential strong negative relationship with the DEc predictor with a -0.695 correlation.
+
+These potentially significant relationships are visually highlighted in the scatter plot where the corresponding predictor plots demonstrate stronger relationships with the response variable. However, this is not conclusive. These relationships need to be tested.
+
+```{r}
+cor(paramo)
+```
+
+```{r}
+pairs(paramo, panel = panel.smooth)
+```
+
+**b)** Fit model using all predictors to explain N.
+
+```{r}
+paramo.lm = lm(N~AR+EL+DEc+DNI,data=paramo)
+summary(paramo.lm)
+```
+
+**Mathematical Multiple Regression Model:**
+
+$\hat{N}$ = $\beta_0$ + $\beta_1(AR$) + $\beta_2(EL$) + $\beta_3(DEc)$ + $\beta_4(DNI)$
+
+$\hat{N}$ = 27.889 + 5.154(AR) + 3.075EL - 0.0127(DEc) + 0.0166(DNI)
+
+-   This model minimises the residual mean squared and the variation around the regression line (6.705) shown in the output.
+
+**Hypothesis:**
+
+$H_{0}$: $\beta_1$ = $\beta_2$ = $\beta_3$ = $\beta_4$ = 0
+
+$H_{1}$: not all $\beta_i$ = 0
+
+-   We are testing whether the each predictor has a significant impact on the response variable. If the null hypothesis is true, then the predictors do not have an impact on the response.
+
+**ANOVA Table:**
+
+```{r}
+anova(paramo.lm)
+
+```
+
+**F-Statistic / Null Distribution:**
+
+*Regression Sum of Squares* = $508.92 + 45.90 + 537.39 + 2.06 = 1094.27$
+
+*Regression Mean Squared* = $\frac{Reg.S.S.}{k}$ = $\frac{1094.27}{4}$ = $273.568$
+
+*Residual Mean Squared* = $44.95$
+
+$F_{obs}$ **=** $F_{4,9}$ = $\frac{Reg.M.S.}{Res.M.S.}$ **=** $\frac{273.568}{44.95}$ **=** $6.086$ with 4 and 9 degrees of freedom
+
+-   **NOTE:** this can be found in the *summary(paramo.lm)* output.
+
+**P-Value:**
+
+-   $P$($F_{3,10}$ $\ge$ $6.086$) = $0.01182$
+
+**Conclusion:**
+
+Since the P-value 0.01182 \< 0.05, the result is significant. There is evidence that the predictors have a significant impact on the response variable.
+
+**c)** Validate the full model using all the predictors.
+
+The Normal QQ plot is approximately linear with slight skewness, and the Residuals vs Fitted plot shows similar variances. The patterns and skewness can be put down to randomness due to the relatively low number of observations of Tree Shrews. Therefore, the multiple regression model can be used to explain the N abundance value. However, for more accuracy and confidence, the study could include more observations.
+
+```{r}
+par(mfrow = c(1,2))
+plot(paramo.lm, which = 1:2)
+```
+
+**d)** Find $R^{2}$ and comment on what it means in the context of the data set.
+
+$R^{2}$ is 0.7301 (found in the output of *summary(paramo.lm)*). This is the coefficient of determination and is the percentage of variation in N that is explained by the linear regression of all the predictors. In this case, 73.01% of the variation in N is explained by the predictors. Given that the rule of thumb is 70%, the model is strong. From the other perspective, approximately 18% of the model was not explained by the predictors and is caused by random variation.
+
+**e)** Find the best multiple regression model that explains the data.
+
+Using the [Step-wise Backward]{.ul} Estimation method, removing the predictor with the highest p-value (the most insignificant) until they are all significant will give the best model. To begin, removing the DNI predictor since it has the highest p-value (0.83541) we have the model:
+
+```{r}
+paramo.lm2 = lm(N~AR+EL+DEc,data=paramo)
+summary(paramo.lm2)
+
+```
+
+-   Now the EL predictor is the most insignificant so we remove it and refit the model:
+
+```{r}
+paramo.lm3 = lm(N~AR+DEc, data=paramo)
+summary(paramo.lm3)
+
+```
+
+-   After removing DNI and EL, all other predictors are now significant. therefore we can conclude this is the best multiple regression model to explain the data. Fitting AR and DEc to explain the N abundance.
+
+**f)** The $R^{2}$ and **Adjusted** $R^{2}$ measures are different when comparing the 'Best' model and the model containing all predictors. Here in the 'Best' model, the $R^{2}$ is 0.7113 which is lower than the model containing all predictors (0.7301). This is because $R^{2}$ will get higher as you include more predictors to fit the model, even if they are insignificant.
+
+The **Adjusted** $R^{2}$ rectifies this by penalising the extra predictors. Now, the **Adjusted** $R^{2}$ for the 'Best' model is higher (0.6588) than the model with all predictors (0.6101).
+
+**g)** Compute 95% confidence interval for the AR regression parameter.
+
+```{r echo = FALSE}
+qt(0.975,13) #critical value for AR
+```
+
+-   95% CI = estimate +/- critical value \* standard error
+
+-   95% CI for AR = 6.683 +/- 2.160369 \* 2.2644
+
+    **(1.7912, 11.5749)**
+
+We are 95% confident that each unit increase in N will cause the increase in AR to be between (1.7912, 11.5749). Given that this interval doesn't contain 0, it highlights how the effect of AR is significant in predicting the N response variable.
+
+## Question 2
+
+```{r}
+shrews = read.table("TreeShrews.dat", header = TRUE)
+```
+
+**a)** This study is a balanced design because there are the same number of replicates for each treatment combination. There are three replicates for each type of Tree Shrew, as well as one of each sleep stage for each type of Shrew.
+
+**b)** Interaction Plots
+
+```{r}
+#Plot 1
+interaction.plot(shrews$Shrews, shrews$Sleep, shrews$HeartRates, trace.label = "Sleep Stage", xlab = "Shrew Type", ylab = "Heart Rate", col = 1:3)
+```
+
+```{r}
+#Plot 2
+interaction.plot(shrews$Sleep, shrews$Shrews, shrews$HeartRates, trace.label = "Shrew Type", xlab = "Sleep Stage", ylab = "Heart Rate", col = 1:6)
+
+```
+
+-   [Comment]{.ul}: some of the lines are somewhat parallel graph meaning that they do not have significant effects on the response variable. For example, in Plot 2, Shrew type 3,4 and 5 are parallel and do not cross. In Plot 1, there is a possible interaction effect between the sleep stage given there is a cross over between lines.
+
+**c)** We cannot fit a Two-Way ANOVA with interaction model to this data set because the interaction effect of Shrews and Sleep is 0.727, which is insignificant. Therefore, it must be removed and test the main effects individually.
+
+```{r}
+shrewsANOVA = lm(HeartRates~Shrews*factor(Sleep),data=shrews)
+anova(shrewsANOVA)
+```
+
+**d)** Carrying out the Individual Tests
+
+[Test 1]{.ul}: Fitting the 'Sleep' effect on 'HeartRates'
+
+```{r}
+sleep.lm = lm(HeartRates~factor(Sleep),data=shrews)
+summary(sleep.lm)
+
+```
+
+Mathematical Model:
+
+-   HeartRates = 19.1667 + 1.8333(LSWS) - 0.1667(REM)
+
+Hypothesis:
+
+-   $H_0$: $\beta_i$ = 0 (all Sleep stages are the same); $H_1$: not all $\beta$ are the same
+
+```{r}
+anova(sleep.lm)
+```
+
+```{r}
+#assumptions for sleep.lm
+par(mfrow = c(1,2))
+plot(sleep.lm,which=1:2)
+```
+
+-   The assumption of equal variance is upheld as shown in the Residuals vs Fitted plot. However, the Normal QQ plot suggests that there is a slight skewness in the distribution of residuals. The results of this model should be assessed with caution based on this.
+
+[Test 2]{.ul}: Fitting the 'Shrews' effect on 'HeartRates'
+
+```{r}
+shrews.lm = lm(HeartRates~factor(Shrews),data=shrews)
+summary(shrews.lm)
+```
+
+-   *Mathematical Model:*
+
+    HeartRates = 14 + 9(Shrews2) + 5.667(Shrews3) + 4(Shrews4) + 9.667(Shrews5) + 6(Shrews6).
+
+-   *Hypothesis:*
+
+    $H_0$: $\beta_i$ = 0 (all shrew types are the same); $H_1$: not all $\beta$ are the same
+
+```{r}
+anova(shrews.lm)
+```
+
+```{r}
+#assumptions for shrews.lm
+par(mfrow = c(1,2))
+plot(shrews.lm,which=1:2)
+
+```
+
+-   The Residuals vs Fitted plot shows no significant pattern and equal variances. The Normal QQ plot also suggests that the distribution of residuals are normal. The slight curve and patterns in both plots can be caused by the relatively low number of observations per treatment. Therefore, the assumptions have been satisfied.
+
+**e)** [Conclusions]{.ul}
+
+Since the interaction effect was insignificant, the Sleep and Shrew type predictors were tested individually to see if they had a significant impact on Heart Rates. The Sleep effect did not have any significant impact on Heart Rates because its p-value (0.6016) is greater than 0.05. Therefore it is not a good predictor. However, the Shrew type predictor was a significant predictor of shrew Heart Rates, since its p-value (0.0003231) \< 0.05. The fitted model has an $R^2$ = 0.8257, meaning that over 82% of the change in Heart Rate is explained by Shrew type. This significance is supported by the first preliminary graph which shows large changes in heart rates for every Shrew type.
